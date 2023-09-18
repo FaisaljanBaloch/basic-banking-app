@@ -1,0 +1,32 @@
+[
+  {
+    "name": "Faisal Jan",
+    "email": "faisal@email.com",
+    "currentBalance": 21
+  },
+  {
+    "name": "Abdul Basit",
+    "email": "abdul@email.com",
+    "currentBalance": 75.7
+  },
+  {
+    "name": "John Mathew",
+    "email": "john@email.com",
+    "currentBalance": 34.5
+  },
+  {
+    "name": "Imran Khan",
+    "email": "imran@email.com",
+    "currentBalance": 2100
+  },
+  {
+    "name": "Angelina",
+    "email": "angel@email.com",
+    "currentBalance": 82
+  },
+  {
+    "name": "Pooja Agarwal",
+    "email": "pooja@email.com",
+    "currentBalance": 57
+  }
+]
