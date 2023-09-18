@@ -8,10 +8,23 @@ class HomePage extends StatelessWidget {
     return Container(
       padding: const EdgeInsets.symmetric(horizontal: 12.0),
       child: const Center(
-        child: Text(
-          "Welcome to Basic Banking App by Faisal Jan. This App was created as a task during an GRIP internship at The Sparks Foundation.",
-          textAlign: TextAlign.center,
-          style: TextStyle(fontSize: 15.0),
+        child: Column(
+          mainAxisAlignment: MainAxisAlignment.center,
+          children: [
+            Padding(
+              padding: EdgeInsets.all(8.0),
+              child: Icon(
+                Icons.money,
+                size: 40,
+                color: Colors.grey,
+              ),
+            ),
+            Text(
+              "Welcome to Basic Banking App by Faisal Jan. It was created during GRIP internship at The Sparks Foundation.",
+              textAlign: TextAlign.center,
+              style: TextStyle(fontSize: 15.0),
+            ),
+          ],
         ),
       ),
     );
