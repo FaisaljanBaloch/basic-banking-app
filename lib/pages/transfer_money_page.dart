@@ -1,3 +1,4 @@
+import 'package:basic_banking_app/util/validator.dart';
 import 'package:flutter/material.dart';
 
 import '../db/bank_database.dart';
@@ -13,15 +14,15 @@ class TransferMoneyPage extends StatefulWidget {
 }
 
 class _TransferMoneyPageState extends State<TransferMoneyPage> {
-  List<Customer> customers = [];
-
   final fromController = TextEditingController();
   final toController = TextEditingController();
   final amountController = TextEditingController();
+  final validator = Validator();
+  final _formKey = GlobalKey<FormState>();
 
   @override
   void initState() {
-    getCustomers();
+    fromController.text = widget.customer.name;
     super.initState();
   }
 
@@ -35,12 +36,14 @@ class _TransferMoneyPageState extends State<TransferMoneyPage> {
       body: Container(
           padding: const EdgeInsets.symmetric(horizontal: 18, vertical: 25),
           child: Form(
+            key: _formKey,
             child: Column(
               crossAxisAlignment: CrossAxisAlignment.start,
               children: [
                 const Text("From",
                     style: TextStyle(color: Colors.grey, fontSize: 15)),
                 TextFormField(
+                  enabled: false,
                   readOnly: true,
                   decoration: InputDecoration(
                     prefixIcon: const Icon(Icons.person),
@@ -54,25 +57,40 @@ class _TransferMoneyPageState extends State<TransferMoneyPage> {
                 const SizedBox(height: 10),
                 const Text("To",
                     style: TextStyle(color: Colors.grey, fontSize: 15)),
-                DropdownMenu<Customer>(
-                  leadingIcon: const Icon(Icons.person),
-                  dropdownMenuEntries:
-                      customers.map<DropdownMenuEntry<Customer>>(
-                    (Customer customer) {
-                      return DropdownMenuEntry<Customer>(
-                          value: customer, label: customer.name);
-                    },
-                  ).toList(),
-                ),
-                TextFormField(
-                  decoration: InputDecoration(
-                    prefixIcon: const Icon(Icons.person),
-                    border: OutlineInputBorder(
-                      borderRadius: BorderRadius.circular(5),
-                    ),
-                    contentPadding: const EdgeInsets.all(14.0),
-                  ),
-                  controller: fromController,
+                FutureBuilder(
+                  future: BankDatabase.instance
+                      .getAllCustomersExcept(widget.customer.id),
+                  builder:
+                      (BuildContext context, AsyncSnapshot<dynamic> snapshot) {
+                    if (snapshot.hasData) {
+                      final customers = snapshot.data;
+                      return DropdownMenu<Customer>(
+                        width: MediaQuery.of(context).size.width * 0.9,
+                        initialSelection: customers[0],
+                        controller: toController,
+                        leadingIcon: const Icon(Icons.person),
+                        dropdownMenuEntries:
+                            customers.map<DropdownMenuEntry<Customer>>(
+                          (Customer customer) {
+                            return DropdownMenuEntry<Customer>(
+                                value: customer, label: customer.name);
+                          },
+                        ).toList(),
+                      );
+                    } else {
+                      return TextFormField(
+                        enabled: false,
+                        readOnly: true,
+                        decoration: InputDecoration(
+                          prefixIcon: const Icon(Icons.person),
+                          border: OutlineInputBorder(
+                            borderRadius: BorderRadius.circular(5),
+                          ),
+                          contentPadding: const EdgeInsets.all(14.0),
+                        ),
+                      );
+                    }
+                  },
                 ),
                 const SizedBox(height: 10),
                 const Text("Amount",
@@ -85,7 +103,9 @@ class _TransferMoneyPageState extends State<TransferMoneyPage> {
                     ),
                     contentPadding: const EdgeInsets.all(14.0),
                   ),
-                  controller: fromController,
+                  controller: amountController,
+                  validator: validator.amountField,
+                  keyboardType: TextInputType.number,
                 ),
                 const SizedBox(height: 20),
                 Center(
@@ -96,13 +116,13 @@ class _TransferMoneyPageState extends State<TransferMoneyPage> {
                       fixedSize: const Size(200, 50),
                     ),
                     onPressed: () {
-                      Navigator.push(
-                        context,
-                        MaterialPageRoute(
-                          builder: (context) =>
-                              TransferMoneyPage(customer: widget.customer),
-                        ),
-                      );
+                      if (_formKey.currentState!.validate()) {
+                        ScaffoldMessenger.of(context).showSnackBar(
+                          SnackBar(
+                            content: Text('Transaction successful! ${amountController.text}'),
+                          ),
+                        );
+                      }
                     },
                     child: const Row(
                       mainAxisAlignment: MainAxisAlignment.spaceAround,
@@ -117,15 +137,5 @@ class _TransferMoneyPageState extends State<TransferMoneyPage> {
             ),
           )),
     );
-  }
-
-  void getCustomers() async {
-    await BankDatabase.instance.getAllCustomers().then((result) {
-      setState(() {
-        customers = result;
-      });
-    }).catchError((e) {
-      debugPrint(e.toString());
-    });
   }
 }

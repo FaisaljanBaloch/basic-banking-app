@@ -1,7 +1,6 @@
 import 'dart:convert';
 
 import 'package:basic_banking_app/model/customer.dart';
-import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import 'package:path/path.dart';
 import 'package:sqflite/sqflite.dart';
@@ -35,14 +34,14 @@ class BankDatabase {
     ${CustomerFields.currentBalance} REAL)
     ''');
 
+    // add dummy customers
     Batch batch = db.batch();
     String customersJson = await rootBundle.loadString("assets/customers.json");
     List customers = json.decode(customersJson);
-    for (var map in customers) {
-      debugPrint(map.toString());
-      batch.insert(tableCustomer, map);
+    for (var customer in customers) {
+      batch.insert(tableCustomer, customer);
     }
-    batch.commit();
+    await batch.commit();
   }
 
   // create an user
@@ -76,6 +75,21 @@ class BankDatabase {
 
     final orderBy = '${CustomerFields.name} ASC';
     final result = await db.query(tableCustomer, orderBy: orderBy);
+
+    return result.map((e) => Customer.fromMap(e)).toList();
+  }
+
+  // fetch all customers
+  Future<List<Customer>> getAllCustomersExcept(int? id) async {
+    final db = await instance.database;
+
+    final orderBy = '${CustomerFields.name} ASC';
+    final result = await db.query(
+      tableCustomer,
+      orderBy: orderBy,
+      where: '${CustomerFields.id} != ?',
+      whereArgs: [id],
+    );
 
     return result.map((e) => Customer.fromMap(e)).toList();
   }
