@@ -1,4 +1,4 @@
-import 'package:basic_banking_app/util/validator.dart';
+import 'package:basic_banking_app/pages/customers_page.dart';
 import 'package:flutter/material.dart';
 
 import '../db/bank_database.dart';
@@ -14,10 +14,11 @@ class TransferMoneyPage extends StatefulWidget {
 }
 
 class _TransferMoneyPageState extends State<TransferMoneyPage> {
+  List<Customer> customers = [];
+
   final fromController = TextEditingController();
-  final toController = TextEditingController();
   final amountController = TextEditingController();
-  final validator = Validator();
+  Customer? selectedCustomer;
   final _formKey = GlobalKey<FormState>();
 
   @override
@@ -57,26 +58,45 @@ class _TransferMoneyPageState extends State<TransferMoneyPage> {
                 const SizedBox(height: 10),
                 const Text("To",
                     style: TextStyle(color: Colors.grey, fontSize: 15)),
-                FutureBuilder(
+                FutureBuilder<List<Customer>>(
                   future: BankDatabase.instance
                       .getAllCustomersExcept(widget.customer.id),
                   builder:
                       (BuildContext context, AsyncSnapshot<dynamic> snapshot) {
-                    if (snapshot.hasData) {
-                      final customers = snapshot.data;
-                      return DropdownMenu<Customer>(
-                        width: MediaQuery.of(context).size.width * 0.9,
-                        initialSelection: customers[0],
-                        controller: toController,
-                        leadingIcon: const Icon(Icons.person),
-                        dropdownMenuEntries:
-                            customers.map<DropdownMenuEntry<Customer>>(
-                          (Customer customer) {
-                            return DropdownMenuEntry<Customer>(
-                                value: customer, label: customer.name);
+                    if (snapshot.connectionState == ConnectionState.waiting) {
+                      return const CircularProgressIndicator();
+                    } else if (snapshot.connectionState ==
+                        ConnectionState.done) {
+                      if (snapshot.hasData) {
+                        final customers = snapshot.data;
+                        return DropdownMenu<Customer>(
+                          width: MediaQuery.of(context).size.width * 0.9,
+                          initialSelection: customers[0],
+                          leadingIcon: const Icon(Icons.person),
+                          dropdownMenuEntries:
+                              customers.map<DropdownMenuEntry<Customer>>(
+                            (Customer customer) {
+                              return DropdownMenuEntry<Customer>(
+                                  value: customer, label: customer.name);
+                            },
+                          ).toList(),
+                          onSelected: (c) {
+                            selectedCustomer = c;
                           },
-                        ).toList(),
-                      );
+                        );
+                      } else {
+                        return TextFormField(
+                          enabled: false,
+                          readOnly: true,
+                          decoration: InputDecoration(
+                            prefixIcon: const Icon(Icons.person),
+                            border: OutlineInputBorder(
+                              borderRadius: BorderRadius.circular(5),
+                            ),
+                            contentPadding: const EdgeInsets.all(14.0),
+                          ),
+                        );
+                      }
                     } else {
                       return TextFormField(
                         enabled: false,
@@ -104,7 +124,7 @@ class _TransferMoneyPageState extends State<TransferMoneyPage> {
                     contentPadding: const EdgeInsets.all(14.0),
                   ),
                   controller: amountController,
-                  validator: validator.amountField,
+                  validator: _validateAmount,
                   keyboardType: TextInputType.number,
                 ),
                 const SizedBox(height: 20),
@@ -116,12 +136,13 @@ class _TransferMoneyPageState extends State<TransferMoneyPage> {
                       fixedSize: const Size(200, 50),
                     ),
                     onPressed: () {
-                      if (_formKey.currentState!.validate()) {
-                        ScaffoldMessenger.of(context).showSnackBar(
-                          SnackBar(
-                            content: Text('Transaction successful! ${amountController.text}'),
-                          ),
-                        );
+                      if (_formKey.currentState!.validate() &&
+                          selectedCustomer != null) {
+                        _transfer(
+                            widget.customer.id!,
+                            selectedCustomer!.id!,
+                            double.tryParse(amountController.text.trim())!,
+                            context);
                       }
                     },
                     child: const Row(
@@ -136,6 +157,40 @@ class _TransferMoneyPageState extends State<TransferMoneyPage> {
               ],
             ),
           )),
+    );
+  }
+
+  void _transfer(
+      int sender, int receiver, double amount, BuildContext context) async {
+    final messenger = ScaffoldMessenger.of(context);
+
+    await BankDatabase.instance.makeTransaction(sender, receiver, amount);
+    messenger.showSnackBar(
+      const SnackBar(
+        content: Text('Transaction successful!'),
+      ),
+    );
+    _navigate();
+  }
+
+  String? _validateAmount(String? value) {
+    if (value == null || value.trim().isEmpty) {
+      return "* amount field is required";
+    } else if (double.parse(value) <= 0) {
+      return "* amount must be minimum \$1";
+    } else if (double.parse(value) > widget.customer.currentBalance) {
+      return "* customer has insufficient balance";
+    } else {
+      return null;
+    }
+  }
+
+  void _navigate() {
+    Navigator.push(
+      context,
+      MaterialPageRoute(
+        builder: (context) => const CustomersPage(),
+      ),
     );
   }
 }

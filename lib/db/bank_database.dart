@@ -1,9 +1,10 @@
 import 'dart:convert';
-
-import 'package:basic_banking_app/model/customer.dart';
 import 'package:flutter/services.dart';
 import 'package:path/path.dart';
 import 'package:sqflite/sqflite.dart';
+
+import '../model/customer.dart';
+import '../model/user_transaction.dart';
 
 class BankDatabase {
   static final BankDatabase instance = BankDatabase._init();
@@ -34,6 +35,14 @@ class BankDatabase {
     ${CustomerFields.currentBalance} REAL)
     ''');
 
+    await db.execute(''' CREATE TABLE $tableTransaction(
+    ${TransactionFields.id} INTEGER PRIMARY KEY AUTOINCREMENT,
+    ${TransactionFields.sender} VARCHAR(25) NOT NULL,
+    ${TransactionFields.receiver} VARCHAR(25) NOT NULL,
+    ${TransactionFields.amount} REAL,
+    ${TransactionFields.createdAt} TIMESTAMP NOT NULL DEFAULT CURRENT_TIMESTAMP)
+    ''');
+
     // add dummy customers
     Batch batch = db.batch();
     String customersJson = await rootBundle.loadString("assets/customers.json");
@@ -50,6 +59,26 @@ class BankDatabase {
     final id = await db.insert(tableCustomer, customer.toMap());
 
     return customer.copy(id: id);
+  }
+
+  // create a transaction
+  Future<void> makeTransaction(int sender, int receiver, double amount) async {
+    final db = await instance.database;
+    final senderUser = await getCustomer(sender);
+    final receiverUser = await getCustomer(receiver);
+
+    await db.transaction((txn) async {
+      await txn.rawUpdate(
+          'UPDATE $tableCustomer SET ${CustomerFields.currentBalance} = ${CustomerFields.currentBalance} - ? WHERE ${CustomerFields.id} = ?',
+          [amount, sender]);
+      await txn.rawUpdate(
+          'UPDATE $tableCustomer SET ${CustomerFields.currentBalance} = ${CustomerFields.currentBalance} + ? WHERE ${CustomerFields.id} = ?',
+          [amount, receiver]);
+
+       await txn.rawInsert(
+          'INSERT INTO $tableTransaction(${TransactionFields.sender}, ${TransactionFields.receiver}, ${TransactionFields.amount}) VALUES (?, ?, ?)',
+          [senderUser.name, receiverUser.name, amount]);
+    });
   }
 
   // fetch one customer
@@ -77,6 +106,16 @@ class BankDatabase {
     final result = await db.query(tableCustomer, orderBy: orderBy);
 
     return result.map((e) => Customer.fromMap(e)).toList();
+  }
+
+  // fetch all transactions
+  Future<List<UserTransaction>> getAllTransactions() async {
+    final db = await instance.database;
+
+    final orderBy = '${TransactionFields.createdAt} ASC';
+    final result = await db.query(tableTransaction, orderBy: orderBy);
+
+    return result.map((e) => UserTransaction.fromMap(e)).toList();
   }
 
   // fetch all customers

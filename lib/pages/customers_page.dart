@@ -48,6 +48,7 @@ class _CustomersPageState extends State<CustomersPage> {
     setState(() {
       _isLoading = true;
     });
+
     await BankDatabase.instance.getAllCustomers().then((result) {
       setState(() {
         customers = result;
