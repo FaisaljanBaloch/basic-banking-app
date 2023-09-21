@@ -112,7 +112,7 @@ class BankDatabase {
   Future<List<UserTransaction>> getAllTransactions() async {
     final db = await instance.database;
 
-    final orderBy = '${TransactionFields.createdAt} ASC';
+    final orderBy = '${TransactionFields.createdAt} DESC';
     final result = await db.query(tableTransaction, orderBy: orderBy);
 
     return result.map((e) => UserTransaction.fromMap(e)).toList();
