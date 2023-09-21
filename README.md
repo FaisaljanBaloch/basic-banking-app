@@ -1,7 +1,7 @@
 # Basic Banking App
 
 Welcome to Basic Banking App. This app is created by Faisal Jan using Flutter, as an assignment
-during GRIP internship at The Sparks Foundation.
+during GRIP internship at [The Sparks Foundation](https://www.thesparksfoundationsingapore.org/).
 
 ## Guides
 
@@ -52,5 +52,8 @@ Each folder in the project contains its own related files, as they are described
 * **lib/model** folder contains all database models.
 * **lib/util** folder contains all utility classes and helpers.
 * **assets** folder contains all the static files.
+
+**Note**: Anyone who wants to apply for this amazing internship is highly encouraged and can apply
+at [Interships@TheSparksFoundation](https://internship.thesparksfoundation.info/)
 
 #### Thank You So Much! Enjoy, have a nice day.
