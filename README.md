@@ -1,6 +1,6 @@
 # Basic Banking App
 
-Welcome to Basic Banking App. This app is created by Faisal Jan using Flutter, as an assignment
+Welcome to Basic Banking App. This app is created by [Faisal Jan](https://www.linkedin.com/in/faisal-jan-webdev/) using Flutter, as an assignment
 during GRIP internship at [The Sparks Foundation](https://www.thesparksfoundationsingapore.org/).
 
 ## Guides
