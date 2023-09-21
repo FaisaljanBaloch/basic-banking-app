@@ -28,5 +28,25 @@
     "name": "Pooja Agarwal",
     "email": "pooja@email.com",
     "currentBalance": 57
+  },
+  {
+    "name": "John Wick",
+    "email": "wicky@email.com",
+    "currentBalance": 157.6
+  },
+  {
+    "name": "Tom Cruise",
+    "email": "tommy@email.com",
+    "currentBalance": 1375
+  },
+  {
+    "name": "Emma Stone",
+    "email": "emma@email.com",
+    "currentBalance": 5
+  },
+  {
+    "name": "Katrina Kaif",
+    "email": "kaify@email.com",
+    "currentBalance": 5325
   }
 ]
