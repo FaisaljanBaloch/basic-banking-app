@@ -1,6 +1,7 @@
-import 'package:basic_banking_app/model/customer.dart';
-import 'package:basic_banking_app/pages/transfer_money_page.dart';
 import 'package:flutter/material.dart';
+
+import '../model/customer.dart';
+import './transfer_money_page.dart';
 
 class ViewCustomerPage extends StatefulWidget {
   const ViewCustomerPage({super.key, required this.customer});

@@ -1,6 +1,6 @@
-import 'package:basic_banking_app/pages/customers_page.dart';
 import 'package:flutter/material.dart';
 
+import './main_page.dart';
 import '../db/bank_database.dart';
 import '../model/customer.dart';
 
@@ -19,6 +19,7 @@ class _TransferMoneyPageState extends State<TransferMoneyPage> {
   final fromController = TextEditingController();
   final amountController = TextEditingController();
   Customer? selectedCustomer;
+  String? errorMsg;
   final _formKey = GlobalKey<FormState>();
 
   @override
@@ -71,7 +72,9 @@ class _TransferMoneyPageState extends State<TransferMoneyPage> {
                         final customers = snapshot.data;
                         return DropdownMenu<Customer>(
                           width: MediaQuery.of(context).size.width * 0.9,
-                          initialSelection: customers[0],
+                          initialSelection: selectedCustomer,
+                          hintText: "Select Recipient",
+                          errorText: errorMsg,
                           leadingIcon: const Icon(Icons.person),
                           dropdownMenuEntries:
                               customers.map<DropdownMenuEntry<Customer>>(
@@ -136,13 +139,18 @@ class _TransferMoneyPageState extends State<TransferMoneyPage> {
                       fixedSize: const Size(200, 50),
                     ),
                     onPressed: () {
-                      if (_formKey.currentState!.validate() &&
-                          selectedCustomer != null) {
-                        _transfer(
-                            widget.customer.id!,
-                            selectedCustomer!.id!,
-                            double.tryParse(amountController.text.trim())!,
-                            context);
+                      if (selectedCustomer == null) {
+                        setState(() {
+                          errorMsg = "* please select a recipient account";
+                        });
+                      } else {
+                        if (_formKey.currentState!.validate()) {
+                          _transfer(
+                              widget.customer.id!,
+                              selectedCustomer!.id!,
+                              double.tryParse(amountController.text.trim())!,
+                              context);
+                        }
                       }
                     },
                     child: const Row(
@@ -186,11 +194,13 @@ class _TransferMoneyPageState extends State<TransferMoneyPage> {
   }
 
   void _navigate() {
-    Navigator.push(
+    Navigator.pushAndRemoveUntil(
       context,
       MaterialPageRoute(
-        builder: (context) => const CustomersPage(),
+        builder: (context) =>
+            const MainPage(title: "View Customers", selectedIndex: 1),
       ),
+      (route) => false,
     );
   }
 }

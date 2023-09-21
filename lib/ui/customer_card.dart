@@ -12,7 +12,7 @@ class CustomerCard extends StatelessWidget {
   Widget build(BuildContext context) {
     return Card(
       child: ListTile(
-        leading: const Icon(Icons.account_circle),
+        leading: const Icon(Icons.account_circle, size: 40),
         title: Column(
           crossAxisAlignment: CrossAxisAlignment.start,
           children: [
@@ -31,7 +31,10 @@ class CustomerCard extends StatelessWidget {
           style: const TextStyle(fontSize: 15),
         ),
         onTap: () {
-          Navigator.push(context, MaterialPageRoute(builder: (context) => ViewCustomerPage(customer: customer)));
+          Navigator.push(
+              context,
+              MaterialPageRoute(
+                  builder: (context) => ViewCustomerPage(customer: customer)));
         },
       ),
     );
